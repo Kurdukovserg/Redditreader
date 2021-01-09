@@ -14,8 +14,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -57,14 +60,25 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject d = contacts.getJSONObject(i);
                         JSONObject c = d.getJSONObject("data");
                         String name = c.getString("author");
-                        String date = c.getString("created_utc");
+                        Long date = c.getLong("created_utc");
+                        date *= 1000;
+                        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Kiev"));
+                        timeFormat.setTimeZone(TimeZone.getTimeZone("Europe/Kiev"));
+                        String date_correct = dateFormat.format(date);
+                        String time_correct = timeFormat.format(date);
+                        String thumbnail = c.getString("thumbnail");
+                        String title = c.getString("title");
                         String comments = c.getString("num_comments");
-                        // tmp hash map for single contact
                         HashMap<String, String> contact = new HashMap<>();
                         // adding each child node to HashMap key => value
                         contact.put("name", name);
-                        contact.put("date", date);
+                        contact.put("date", date_correct + " " + time_correct);
+                        //contact.put("time", time_correct);
                         contact.put("comments", comments);
+                        contact.put("title", title);
+                        contact.put("thumbnail", thumbnail);
                         Log.e(TAG, "contact map: " + contact);
                         contactList.add(contact);
                     }
@@ -100,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             ListAdapter adapter = new SimpleAdapter(MainActivity.this, contactList,
-                    R.layout.list_item, new String[]{ "name","date"},
-                    new int[]{R.id.author, R.id.date_of_creation});
+                    R.layout.list_item, new String[]{ "name","date", "title"},
+                    new int[]{R.id.author, R.id.date_of_creation, R.id.thread});
             listView.setAdapter(adapter);
         }
     }

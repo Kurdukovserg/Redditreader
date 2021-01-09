@@ -4,20 +4,42 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
-
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="2dip"
+            android:textColor="@color/black"
+            android:text="Author:"/>
     <TextView
         android:id="@+id/author"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="2dip"
         android:textColor="@color/black"
-        android:text="Author"/>
-
+        android:text="Author"
+        android:paddingRight="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#5d5d5d"
+            android:text="date:"/>
     <TextView
         android:id="@+id/date_of_creation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#5d5d5d"
-        android:textStyle="bold"
+        android:text="date:"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/thread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"
+        android:textColor="@color/black"
         android:text="date:"/>
 </LinearLayout>
