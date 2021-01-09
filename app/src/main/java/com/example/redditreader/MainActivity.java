@@ -34,9 +34,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.listView);
         contactList = new ArrayList<>();
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
         new GetRedditData().execute();
 
     }
@@ -128,8 +125,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             ListAdapter adapter = new SimpleAdapter(MainActivity.this, contactList,
-                    R.layout.list_item, new String[]{ "name","date", "title", "thumbnail"},
-                    new int[]{R.id.author, R.id.date_of_creation, R.id.thread, R.id.thumbnail});
+                    R.layout.list_item, new String[]{ "name","date", "title", "thumbnail", "comments"},
+                    new int[]{R.id.author, R.id.date_of_creation, R.id.thread, R.id.thumbnail, R.id.comments_count});
             listView.setAdapter(adapter);
         }
     }
