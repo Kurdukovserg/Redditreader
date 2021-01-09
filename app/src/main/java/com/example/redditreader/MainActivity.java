@@ -2,6 +2,7 @@ package com.example.redditreader;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,16 +10,11 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TimeZone;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -60,26 +56,28 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject d = contacts.getJSONObject(i);
                         JSONObject c = d.getJSONObject("data");
                         String name = c.getString("author");
-                        Long date = c.getLong("created_utc");
+                        long date = c.getLong("created_utc");
                         date *= 1000;
-                        DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Kiev"));
-                        timeFormat.setTimeZone(TimeZone.getTimeZone("Europe/Kiev"));
-                        String date_correct = dateFormat.format(date);
-                        String time_correct = timeFormat.format(date);
+                        long timePass = System.currentTimeMillis() - date;
+                        Integer hours = (int) timePass/(1000*60*60);
                         String thumbnail = c.getString("thumbnail");
+                        if(thumbnail.equals("default")||thumbnail.equals("self")){
+                            Integer thumb = R.drawable.default_img;
+                            thumbnail = thumb.toString();
+                        }
+                        String imgName = "img" + i;
+                        Drawable dr = sh.LoadImageFromWebOperations(thumbnail, imgName);
+                        Integer resID = getResources().getIdentifier(imgName, "drawable", getPackageName());
                         String title = c.getString("title");
                         String comments = c.getString("num_comments");
                         HashMap<String, String> contact = new HashMap<>();
-                        // adding each child node to HashMap key => value
                         contact.put("name", name);
-                        contact.put("date", date_correct + " " + time_correct);
-                        //contact.put("time", time_correct);
+                        contact.put("date", hours.toString());
                         contact.put("comments", comments);
                         contact.put("title", title);
-                        contact.put("thumbnail", thumbnail);
-                        Log.e(TAG, "contact map: " + contact);
+                        contact.put("thumbnail", resID.toString());
+                        contact.put("dr", imgName);
+                        Log.e(TAG, "contact map: " + imgName + " " + resID);
                         contactList.add(contact);
                     }
                 } catch (final JSONException e) {
@@ -114,8 +112,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             ListAdapter adapter = new SimpleAdapter(MainActivity.this, contactList,
-                    R.layout.list_item, new String[]{ "name","date", "title"},
-                    new int[]{R.id.author, R.id.date_of_creation, R.id.thread});
+                    R.layout.list_item, new String[]{ "name","date", "title", "thumbnail"},
+                    new int[]{R.id.author, R.id.date_of_creation, R.id.thread, R.id.thumbnail});
             listView.setAdapter(adapter);
         }
     }
