@@ -2,6 +2,7 @@ package com.example.redditreader;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +14,8 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,6 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     ListView listView;
     ArrayList<HashMap<String, String>> contactList;
+    HttpHandler handler = new HttpHandler();
+    File dir = handler.getCacheDirectory(this);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +34,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.listView);
         contactList = new ArrayList<>();
+        if(!dir.exists()){
+            dir.mkdirs();
+        }
         new GetRedditData().execute();
+
     }
 
     private class GetRedditData extends AsyncTask<Void, Void, Void> {
@@ -49,11 +59,11 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
                     JSONObject data = jsonObj.getJSONObject("data");
-                    JSONArray contacts = data.getJSONArray("children");
+                    JSONArray post = data.getJSONArray("children");
 
-                    // looping through All Contacts
-                    for (int i = 0; i < contacts.length(); i++) {
-                        JSONObject d = contacts.getJSONObject(i);
+                    // looping through All posts
+                    for (int i = 0; i < post.length(); i++) {
+                        JSONObject d = post.getJSONObject(i);
                         JSONObject c = d.getJSONObject("data");
                         String name = c.getString("author");
                         long date = c.getLong("created_utc");
@@ -61,13 +71,18 @@ public class MainActivity extends AppCompatActivity {
                         long timePass = System.currentTimeMillis() - date;
                         Integer hours = (int) timePass/(1000*60*60);
                         String thumbnail = c.getString("thumbnail");
+                        String postUrl = "";
+                        String imgName = "img" + i + ".png";
                         if(thumbnail.equals("default")||thumbnail.equals("self")){
                             Integer thumb = R.drawable.default_img;
                             thumbnail = thumb.toString();
+                            postUrl = "zero";
+                        }else{
+                        File f = new File(dir, imgName);
+                        Bitmap bitmap = sh.LoadImageFromWeb(thumbnail,f);
+                        thumbnail =f.getAbsolutePath();
+                        postUrl = c.getString("url");
                         }
-                        String imgName = "img" + i;
-                        Drawable dr = sh.LoadImageFromWebOperations(thumbnail, imgName);
-                        Integer resID = getResources().getIdentifier(imgName, "drawable", getPackageName());
                         String title = c.getString("title");
                         String comments = c.getString("num_comments");
                         HashMap<String, String> contact = new HashMap<>();
@@ -75,9 +90,10 @@ public class MainActivity extends AppCompatActivity {
                         contact.put("date", hours.toString());
                         contact.put("comments", comments);
                         contact.put("title", title);
-                        contact.put("thumbnail", resID.toString());
+                        contact.put("thumbnail", thumbnail);
                         contact.put("dr", imgName);
-                        Log.e(TAG, "contact map: " + imgName + " " + resID);
+                        contact.put("url", postUrl);
+                        Log.e(TAG, "contact map: " + thumbnail);
                         contactList.add(contact);
                     }
                 } catch (final JSONException e) {
