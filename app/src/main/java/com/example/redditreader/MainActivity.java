@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -25,8 +24,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     ListView listView;
-    ArrayList<HashMap<String, String>> contactList;
-
+    ArrayList<HashMap<String, String>> postList;
     HttpHandler handler = new HttpHandler();
     File dir = handler.getCacheDirectory(this);
 
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.listView);
 
-        contactList = new ArrayList<>();
+        postList = new ArrayList<>();
         //if (savedInstanceState.isEmpty())
         new GetRedditData().execute();
     }
@@ -75,13 +73,12 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject data = jsonObj.getJSONObject("data");
                     JSONArray post = data.getJSONArray("children");
 
-                    // looping through All posts
+                    // looping through All posts, collecting data
                     for (int i = 0; i < post.length(); i++) {
                         JSONObject d = post.getJSONObject(i);
                         JSONObject c = d.getJSONObject("data");
                         String name = c.getString("author");
-                        long date = c.getLong("created_utc");
-                        date *= 1000;
+                        long date = c.getLong("created_utc") * 1000;
                         long timePass = System.currentTimeMillis() - date;
                         Integer hours = (int) timePass/(1000*60*60);
                         String thumbnail = c.getString("thumbnail");
@@ -108,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                         contact.put("dr", imgName);
                         contact.put("url", postUrl);
                         //Log.e(TAG, "contact map: " + thumbnail);
-                        contactList.add(contact);
+                        postList.add(contact);
                     }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            ListAdapter adapter = new SimpleAdapter(MainActivity.this, contactList,
+            ListAdapter adapter = new SimpleAdapterExtended(MainActivity.this, postList,
                     R.layout.list_item, new String[]{ "name","date", "title", "thumbnail", "comments"},
                     new int[]{R.id.author, R.id.date_of_creation, R.id.thread, R.id.thumbnail, R.id.comments_count});
             listView.setAdapter(adapter);

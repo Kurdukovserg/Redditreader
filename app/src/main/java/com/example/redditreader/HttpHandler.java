@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.Toast;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -103,7 +105,12 @@ public class HttpHandler {
             cacheDir = context.getCacheDir();
 
         if (!cacheDir.exists())
-            cacheDir.mkdirs();
+            try {
+                cacheDir.mkdirs();
+            }catch (SecurityException e){
+                Log.e(TAG, "Security Exception");
+                Toast.makeText(context, "Permissions filed, some functionality may not work. /n please, check permissions manually", Toast.LENGTH_LONG).show();
+            }
         //Log.e(TAG, "Dir: " + cacheDir +" exists: " + cacheDir.exists());
         return cacheDir;
     }
