@@ -3,20 +3,15 @@ package com.example.redditreader;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
 import android.util.Log;
-
-import org.apache.http.params.HttpParams;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -72,19 +67,8 @@ public class HttpHandler {
 
         return sb.toString();
     }
-    public Drawable LoadImageFromWebOperations(String url, String name)
-    {
-        try{
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, name);
-            return d;
-        }catch (Exception e) {
-            System.out.println("Exc="+e);
-            return null;
-        }
-    }
 
-    public Bitmap LoadImageFromWeb(String url, File file)
+    public Bitmap LoadImageFromWeb(String url, File file, int width)
     {
         try {
             Bitmap bitmap=null;
@@ -95,8 +79,8 @@ public class HttpHandler {
             conn.setInstanceFollowRedirects(true);
             InputStream is=conn.getInputStream();
             bitmap=BitmapFactory.decodeStream(is);
-            Log.e(TAG, "Bitmap: " + bitmap.getHeight());
-            writeFile(bitmap,file);
+            //Log.e(TAG, "Bitmap: " + bitmap.getHeight());
+            writeFile(bitmap,file,width);
             conn.disconnect();
             return bitmap;
         } catch (Throwable ex){
@@ -120,15 +104,16 @@ public class HttpHandler {
 
         if (!cacheDir.exists())
             cacheDir.mkdirs();
-        Log.e(TAG, "Dir: " + cacheDir +" exists: " + cacheDir.exists());
+        //Log.e(TAG, "Dir: " + cacheDir +" exists: " + cacheDir.exists());
         return cacheDir;
     }
 
-    private void writeFile(Bitmap bmp, File f) {
+    private void writeFile(Bitmap bmp, File f, int width) {
         FileOutputStream out = null;
 
         try {
             out = new FileOutputStream(f);
+            if(width > bmp.getWidth())bmp = scaleToFitWidth(bmp, width);
             bmp.compress(Bitmap.CompressFormat.PNG, 80, out);
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,6 +124,11 @@ public class HttpHandler {
             } catch (Exception ex) {
             }
         }
+    }
+    private Bitmap scaleToFitWidth(Bitmap b, int width)
+    {
+        float factor = width / (float) b.getWidth();
+        return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
     }
 
 }

@@ -3,10 +3,12 @@ package com.example.redditreader;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.webkit.WebView;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     ListView listView;
     ArrayList<HashMap<String, String>> contactList;
+
     HttpHandler handler = new HttpHandler();
     File dir = handler.getCacheDirectory(this);
 
@@ -33,10 +36,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.listView);
-        contactList = new ArrayList<>();
-        new GetRedditData().execute();
 
+        contactList = new ArrayList<>();
+        //if (savedInstanceState.isEmpty())
+        new GetRedditData().execute();
     }
+
+    public void onMyButtonClick(View view)
+    {
+        ImageView iv = (ImageView)view;
+
+//        WebView wv=(WebView)findViewById(R.id.web_view);
+//        String url = "url";
+//            wv.loadUrl(url);
+
+        Log.e(TAG, "Button clicked: " + iv.toString());
+        Toast.makeText(this, "clicked:"+view.hashCode(), Toast.LENGTH_SHORT).show();
+    }
+
 
     private class GetRedditData extends AsyncTask<Void, Void, Void> {
         @Override
@@ -51,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             // Making a request to url and getting response
             String url = "https://www.reddit.com/r/popular/top.json";
             String jsonStr = sh.makeServiceCall(url);
-            Log.e(TAG, "Response from url: " + jsonStr);
+            //Log.e(TAG, "Response from url: " + jsonStr);
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
@@ -76,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
                             postUrl = "zero";
                         }else{
                         File f = new File(dir, imgName);
-                        Bitmap bitmap = sh.LoadImageFromWeb(thumbnail,f);
-                        thumbnail =f.getAbsolutePath();
+                        Bitmap bitmap = sh.LoadImageFromWeb(thumbnail,f, 2);
+                        thumbnail = f.getAbsolutePath();
                         postUrl = c.getString("url");
                         }
                         String title = c.getString("title");
@@ -90,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         contact.put("thumbnail", thumbnail);
                         contact.put("dr", imgName);
                         contact.put("url", postUrl);
-                        Log.e(TAG, "contact map: " + thumbnail);
+                        //Log.e(TAG, "contact map: " + thumbnail);
                         contactList.add(contact);
                     }
                 } catch (final JSONException e) {
@@ -129,5 +146,7 @@ public class MainActivity extends AppCompatActivity {
                     new int[]{R.id.author, R.id.date_of_creation, R.id.thread, R.id.thumbnail, R.id.comments_count});
             listView.setAdapter(adapter);
         }
+
     }
+
 }
